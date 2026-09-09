@@ -1,7 +1,13 @@
 name: Validate
 
+# `pull_request` covers branches and `push` covers main and tags. Without the
+# branch filter both fire for a branch that has a PR open, running every job
+# twice for one change — six check runs for three jobs, and two of every
+# notification.
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
   schedule:
     # HACS and hassfest both check against a moving target — Home Assistant
@@ -19,6 +25,20 @@ jobs:
   hacs:
     name: HACS
     runs-on: ubuntu-latest
+    # Advisory, not blocking. `hacs/action` validates a repository for the HACS
+    # *default store*, which this one has deliberately not adopted: it is
+    # private and installed as a custom repository, which needs no topics,
+    # description or brand assets. Two of its checks cannot pass at all here —
+    # `brands` wants the food_calc domain registered in the public
+    # home-assistant/brands repository, and the `hacs.json` and
+    # `integration_manifest` failures are the action reading a private
+    # repository's contents and getting nothing back (both files are valid;
+    # hacs.json passes HACS's own HACS_MANIFEST_JSON_SCHEMA).
+    #
+    # Kept rather than deleted because what it reports is still worth seeing,
+    # and because making this blocking again is one line if the repository is
+    # ever made public or submitted to the store.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: hacs/action@main
