@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Food Calc",
+        "description": "Create a token on your household's settings page, under Plan API, then paste it here.",
+        "data": {
+          "base_url": "Base URL",
+          "household_id": "Household ID",
+          "token": "Plan API token"
+        },
+        "data_description": {
+          "base_url": "Where Food Calc is hosted, for example https://food-calc.example",
+          "household_id": "The number in your household's URL, for example 12 in /h/12/plan",
+          "token": "The token from the household settings page. It is the whole credential, so treat it like a password."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect to Food Calc",
+        "description": "The token for household {household} is no longer accepted. It may have been revoked, or the person who created it may have left the household. Create a new one under Plan API on the household settings page and paste it here.",
+        "data": {
+          "token": "Plan API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach Food Calc at that address.",
+      "invalid_auth": "Food Calc rejected that token for that household. Check both the token and the household ID — the API deliberately does not say which one is wrong.",
+      "invalid_url": "That is not a valid http:// or https:// address.",
+      "unknown": "Unexpected error. Check the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "That household is already set up.",
+      "reauth_successful": "Food Calc reconnected."
+    }
+  }
+}

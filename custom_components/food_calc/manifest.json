@@ -1,0 +1,12 @@
+{
+  "domain": "food_calc",
+  "name": "Food Calc",
+  "codeowners": ["@oli-sanders"],
+  "config_flow": true,
+  "documentation": "https://github.com/S-Food-Calc/hass-food-calc",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/S-Food-Calc/hass-food-calc/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

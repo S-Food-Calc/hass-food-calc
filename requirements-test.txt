@@ -1,0 +1,5 @@
+# Pinned to the pair actually used to verify this integration. The Home
+# Assistant version comes with pytest-homeassistant-custom-component, which
+# tracks core release for release.
+pytest-homeassistant-custom-component==0.13.316
+ruff==0.14.2
