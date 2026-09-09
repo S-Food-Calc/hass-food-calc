@@ -156,6 +156,17 @@ ruff check .
 ruff format --check .
 ```
 
+### Releasing
+
+Bump `version` in `custom_components/food_calc/manifest.json` and merge to
+`main`. The Release workflow reads that version, tags it `vX.Y.Z` and publishes
+a GitHub release — HACS installs from releases, so a version that is never
+released is a version nobody can install. A merge that does not touch the
+manifest re-runs the workflow and does nothing, which is the usual case.
+
+The manifest is the only place a version lives, so a tag and a manifest cannot
+drift apart.
+
 `custom_components/food_calc/model.py` deliberately imports no Home Assistant:
 the week arithmetic and the plan-to-entity shaping are the parts most likely to
 be quietly wrong, so they are kept testable on their own.

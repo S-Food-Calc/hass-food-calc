@@ -1,0 +1,94 @@
+name: Release
+
+# Merging to main is what cuts a release. The version is not decided here: it
+# is read from the integration's manifest, which is the file Home Assistant and
+# HACS already treat as the source of truth, so there is only ever one place to
+# change it and no way for a tag and a manifest to disagree.
+#
+# Bumping `version` in custom_components/food_calc/manifest.json and merging is
+# therefore the whole release process. A merge that does not touch it re-runs
+# this and does nothing, which is the common case.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Two merges in quick succession would otherwise race to create the same tag.
+# Not cancel-in-progress: a half-finished release is worse than a slow one.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Tag and release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Tags are what tell this whether the version has already been
+          # released, so a shallow checkout without them would re-tag forever.
+          fetch-depth: 0
+
+      - name: Read the version from the manifest
+        id: manifest
+        run: |
+          set -euo pipefail
+          version=$(jq -er '.version' custom_components/food_calc/manifest.json)
+
+          # A malformed version would otherwise become a malformed tag that has
+          # to be deleted by hand, so it fails here instead.
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::manifest.json version '$version' is not a semantic version"
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Manifest version: $version"
+
+      - name: Check whether that version is already released
+        id: existing
+        run: |
+          set -euo pipefail
+          tag='${{ steps.manifest.outputs.tag }}'
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$tag already exists — nothing to release."
+            echo "### No release: \`$tag\` already exists" >> "$GITHUB_STEP_SUMMARY"
+            echo "Bump \`version\` in \`custom_components/food_calc/manifest.json\` to cut a new one." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "$tag is new."
+          fi
+
+      - name: Create the tag
+        if: steps.existing.outputs.exists == 'false'
+        run: |
+          set -euo pipefail
+          tag='${{ steps.manifest.outputs.tag }}'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Annotated so the tag carries who cut it and when, which a
+          # lightweight tag does not.
+          git tag -a "$tag" -m "Food Calc $tag"
+          git push origin "$tag"
+
+      - name: Publish the release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag='${{ steps.manifest.outputs.tag }}'
+          # HACS installs from releases, not from bare tags: without this step
+          # the tag would exist and HACS would still fall back to the default
+          # branch. --generate-notes fills the body from the merged commits.
+          gh release create "$tag" \
+            --title "$tag" \
+            --generate-notes \
+            --verify-tag
+          echo "### Released [\`$tag\`](${{ github.server_url }}/${{ github.repository }}/releases/tag/$tag)" >> "$GITHUB_STEP_SUMMARY"
