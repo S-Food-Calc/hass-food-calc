@@ -10,7 +10,7 @@
           "token": "Plan API token"
         },
         "data_description": {
-          "base_url": "Where Food Calc is hosted, for example https://food-calc.example",
+          "base_url": "The address you open Food Calc at, including the http or https prefix",
           "household_id": "The number in your household's URL, for example 12 in /h/12/plan",
           "token": "The token from the household settings page. It is the whole credential, so treat it like a password."
         }
