@@ -38,10 +38,15 @@ jobs:
     # Kept rather than deleted because what it reports is still worth seeing,
     # and because making this blocking again is one line if the repository is
     # ever made public or submitted to the store.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: hacs/action@main
+        # On the step, not the job. Job-level `continue-on-error` only keeps a
+        # failure from failing the whole workflow run — the job itself still
+        # reports a failed check run, which is what shows against the PR.
+        # Step-level keeps the failure out of the job's conclusion, which is
+        # what actually makes this advisory.
+        continue-on-error: true
         with:
           category: integration
 
