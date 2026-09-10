@@ -65,9 +65,12 @@ This is not in the HACS default store, so add it as a custom repository:
 2. Repository: `https://github.com/S-Food-Calc/hass-food-calc`, category **Integration**
 3. Install **Food Calc**, then restart Home Assistant
 
-> **This repository is private.** HACS can only see it if you give it a GitHub
-> personal access token with read access, configured on the HACS integration. A
-> public fork or a manual install avoids that.
+HACS reads the repository over the GitHub API using the token it gets from its
+own device-flow login. That token is requested with **no OAuth scopes**, so it
+can only see public repositories — there is no setting anywhere in HACS for
+supplying your own token instead. A private repository simply cannot be
+installed this way; use the manual install below if this one is ever made
+private again.
 
 ### Manually
 
